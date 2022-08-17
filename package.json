@@ -10,17 +10,9 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:elixir-auto-alias.helloWorld"
+        "onLanguage:elixir"
 	],
 	"main": "./out/extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "elixir-auto-alias.helloWorld",
-				"title": "Hello World"
-			}
-		]
-	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
