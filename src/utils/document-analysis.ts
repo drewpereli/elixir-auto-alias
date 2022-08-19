@@ -1,6 +1,14 @@
+// Can be used to create a vscode.Position
 interface SimplePosition {
   line: number;
   character: number;
+}
+
+// Can be used to create a vscode.TextEdit
+interface SimpleTextEdit {
+  start: SimplePosition;
+  end?: SimplePosition; // Defaults to start
+  newText: string;
 }
 
 export function documentDefinesModule(
@@ -22,15 +30,13 @@ export function documentAlreadyHasAlias(
 
   // Else, check if the document has something like "alias Foo.Bar.{Baz, Bin}"
   // This is only valid if the moduleName actually has multiple parts (i.e. periods)
+  // because otherwise we know its false, since we know it can't be aliased using the bracket syntax
 
-  const moduleParts = moduleName.split('.');
+  const parts = moduleParts(moduleName);
 
-  if (moduleParts.length < 2) {
+  if (!parts.prefix) {
     return false;
   }
-
-  // Start by getting the prefix. If the moduleName "Foo.Bar.Baz", the prefix should be "Foo.Bar"
-  const modulePrefix = moduleParts.slice(0, -1).join('.');
 
   // Create a regex to see if we have an alias of the form "alias Foo.Bar.{Baz, Bin}"
   // This part's a little weird. Since we're creating a regex from a string, we have to escape all the backslashes that should be in the regex
@@ -38,7 +44,7 @@ export function documentAlreadyHasAlias(
   // then a "{", followed by a list of words separated by commas and spaces (i.e. the alias names), and then a "}".
   // The alias name list is captured in a group called aliasNames
   const regex = new RegExp(
-    `alias\\s${modulePrefix.replace(
+    `alias\\s${parts.prefix.replace(
       /\./g,
       '\\.'
     )}\.{(?<aliasNames>(\\w+,?\\s?)+)}`
@@ -53,10 +59,7 @@ export function documentAlreadyHasAlias(
   // If the regex matched something like alias Foo.Bar.{Baz, Bin}, this will be ["Baz", "Bin"]
   const aliasNames = match.groups.aliasNames.split(', ');
 
-  // If the moduleName is "Foo.Bar.Baz", this will be "Baz"
-  const moduleAliasName = moduleParts[moduleParts.length - 1];
-
-  return aliasNames.includes(moduleAliasName);
+  return aliasNames.includes(parts.name);
 }
 
 export function positionForNewAliasLine(
@@ -186,4 +189,98 @@ export function lineStartOffset(line: string): number {
   const match = line.match(/^\s*/);
 
   return match?.[0].length ?? 0;
+}
+
+export function textEditForForModule(
+  moduleName: string,
+  document: string
+): SimpleTextEdit {
+  //	Get module prefix
+  //	If the module has a prefix and it's already aliased
+  //		return text edit for adding module name to existing alias
+  // else, return text edit for adding new alias
+
+  const parts = moduleParts(moduleName);
+
+  const lineToUpdate = lineOfUpdatableAlias(moduleName, document);
+
+  if (lineToUpdate !== undefined) {
+    const lineText = document.split('\n')[lineToUpdate];
+
+    const newLineText = addAliasNameToLine(parts.name, lineText);
+
+    return {
+      start: { line: lineToUpdate, character: 0 },
+      end: { line: lineToUpdate, character: lineText.length },
+      newText: newLineText,
+    };
+  }
+
+  return {
+    start: positionForNewAliasLine(moduleName, document),
+    newText: `alias ${moduleName}`,
+  };
+}
+
+// e.g. if moduleName is Foo.Bar.Baz, will return {prefix: 'Foo.Bar', name: 'Baz'}
+export function moduleParts(moduleName: string): {
+  name: string;
+  prefix?: string;
+} {
+  const parts = moduleName.split('.');
+
+  const name = parts[parts.length - 1];
+
+  if (parts.length < 2) {
+    return {
+      name,
+    };
+  }
+
+  const prefix = parts.slice(0, -1).join('.');
+
+  return { name, prefix };
+}
+
+// If there is an existing alias declaration in the document that we can multi-alias to add an alias of moduleName, will return the line number of that alias
+// Otherwise return undefined
+// Assumes the module is not already aliased in the document
+// The tests should illustrate the use of this function
+export function lineOfUpdatableAlias(
+  moduleName: string,
+  document: string
+): number | undefined {
+  const { prefix, name } = moduleParts(moduleName);
+
+  if (!prefix) return;
+
+  const escapedPrefix = prefix.replace(/\./g, '\\.');
+  const regex = new RegExp(`^\\s*alias ${escapedPrefix}\\.(\\w+$|{)`);
+
+  const lines = document.split('\n');
+
+  const idx = lines.findIndex((line) => regex.test(line));
+
+  return idx === -1 ? undefined : idx;
+}
+
+export function addAliasNameToLine(name: string, line: string): string {
+  if (line.includes('{')) {
+    const [pre, bracketed] = line.split(/(?={)/);
+
+    const bracketedAliases = bracketed.trim().slice(1, -1).split(/, ?/);
+
+    const newAliases = [...bracketedAliases, name].sort(compareModuleNames);
+
+    return `${pre}{${newAliases.join(', ')}}`;
+  }
+
+  const parts = line.split('.');
+
+  const currentName = parts.pop() as string;
+  const pre = parts.join('.');
+
+  const newAliases = [currentName, name].sort(compareModuleNames);
+
+  return `${pre}.{${newAliases.join(', ')}}`;
 }
