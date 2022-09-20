@@ -49,7 +49,8 @@ export default class AutocompletionProvider
     const vsCodeEdit = new vscode.TextEdit(editRange, edit.newText);
 
     return {
-      label: moduleName,
+      label: `alias ${moduleName}`,
+      filterText: moduleName,
       additionalTextEdits: [vsCodeEdit],
       insertText: parts.name,
     };
