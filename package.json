@@ -3,7 +3,7 @@
   "displayName": "elixir-auto-alias",
   "description": "Automatically add alias for elixir module when you type the name into another module",
   "publisher": "DrewPereli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "repository": "https://github.com/drewpereli/elixir-auto-alias",
   "engines": {
     "vscode": "^1.70.0"
