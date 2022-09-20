@@ -334,7 +334,7 @@ describe('textEditForForModule', function () {
       ],
       expectedOutput: {
         start: { line: 1, character: 2 },
-        newText: 'alias Foo',
+        newText: 'alias Foo\n',
       },
     },
     {
@@ -349,7 +349,7 @@ describe('textEditForForModule', function () {
       ],
       expectedOutput: {
         start: { line: 2, character: 2 },
-        newText: 'alias Foo',
+        newText: 'alias Foo\n',
       },
     },
     {

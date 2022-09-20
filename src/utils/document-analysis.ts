@@ -218,7 +218,7 @@ export function textEditForForModule(
 
   return {
     start: positionForNewAliasLine(moduleName, document),
-    newText: `alias ${moduleName}`,
+    newText: `alias ${moduleName}\n`,
   };
 }
 
