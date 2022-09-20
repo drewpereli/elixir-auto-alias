@@ -16,7 +16,7 @@ export async function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 async function getModules(): Promise<string[]> {
-  const files = await vscode.workspace.findFiles('**/*.ex');
+  const files = await vscode.workspace.findFiles('**/*.ex', 'deps');
 
   const modules = await Promise.all(
     files.map((f) => getModuleNameFromFile(f.fsPath))
