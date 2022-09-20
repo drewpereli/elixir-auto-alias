@@ -1,4 +1,9 @@
 import * as vscode from 'vscode';
+import {
+  documentAlreadyHasAlias,
+  documentDefinesModule,
+  textEditForForModule,
+} from './utils/document-analysis';
 
 export default class AutocompletionProvider
   implements vscode.CompletionItemProvider
@@ -6,14 +11,43 @@ export default class AutocompletionProvider
   constructor(private modules: string[]) {}
 
   public provideCompletionItems(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: vscode.CancellationToken
+    document: vscode.TextDocument
   ): Thenable<vscode.CompletionItem[]> {
-    const items: vscode.CompletionItem[] = this.modules.map((module) => ({
-      label: module,
-    }));
+    const items: vscode.CompletionItem[] = this.modules
+      .map((moduleName) => this.completionItemForModule(moduleName, document))
+      .filter((item): item is vscode.CompletionItem => item !== undefined);
 
     return Promise.resolve(items);
+  }
+
+  private completionItemForModule(
+    moduleName: string,
+    document: vscode.TextDocument
+  ): vscode.CompletionItem | undefined {
+    const text = document.getText();
+
+    if (documentDefinesModule(moduleName, text)) {
+      return;
+    }
+
+    if (documentAlreadyHasAlias(moduleName, text)) {
+      return;
+    }
+
+    const edit = textEditForForModule(moduleName, text);
+
+    const startPos = new vscode.Position(edit.start.line, edit.start.character);
+    const endPos = edit.end
+      ? new vscode.Position(edit.end.line, edit.end.character)
+      : startPos;
+
+    const editRange = new vscode.Range(startPos, endPos);
+
+    const vsCodeEdit = new vscode.TextEdit(editRange, edit.newText);
+
+    return {
+      label: moduleName,
+      additionalTextEdits: [vsCodeEdit],
+    };
   }
 }
