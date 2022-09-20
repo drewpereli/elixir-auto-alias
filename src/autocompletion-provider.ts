@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import {
   documentAlreadyHasAlias,
   documentDefinesModule,
+  moduleParts,
   textEditForForModule,
 } from './utils/document-analysis';
 
@@ -36,6 +37,8 @@ export default class AutocompletionProvider
 
     const edit = textEditForForModule(moduleName, text);
 
+    const parts = moduleParts(moduleName);
+
     const startPos = new vscode.Position(edit.start.line, edit.start.character);
     const endPos = edit.end
       ? new vscode.Position(edit.end.line, edit.end.character)
@@ -48,6 +51,7 @@ export default class AutocompletionProvider
     return {
       label: moduleName,
       additionalTextEdits: [vsCodeEdit],
+      insertText: parts.name,
     };
   }
 }
