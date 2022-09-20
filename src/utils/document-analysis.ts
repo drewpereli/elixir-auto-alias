@@ -216,9 +216,14 @@ export function textEditForForModule(
     };
   }
 
+  const position = positionForNewAliasLine(moduleName, document);
+  const charOffset = position.character;
+
+  const newText = `${' '.repeat(charOffset)}alias ${moduleName}\n`;
+
   return {
-    start: positionForNewAliasLine(moduleName, document),
-    newText: `alias ${moduleName}\n`,
+    start: { line: position.line, character: 0 },
+    newText,
   };
 }
 

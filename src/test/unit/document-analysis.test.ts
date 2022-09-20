@@ -333,8 +333,8 @@ describe('textEditForForModule', function () {
 				`,
       ],
       expectedOutput: {
-        start: { line: 1, character: 2 },
-        newText: 'alias Foo\n',
+        start: { line: 1, character: 0 },
+        newText: '  alias Foo\n',
       },
     },
     {
@@ -348,8 +348,8 @@ describe('textEditForForModule', function () {
 				`,
       ],
       expectedOutput: {
-        start: { line: 2, character: 2 },
-        newText: 'alias Foo\n',
+        start: { line: 2, character: 0 },
+        newText: '  alias Foo\n',
       },
     },
     {
@@ -410,6 +410,24 @@ describe('textEditForForModule', function () {
         start: { line: 1, character: 0 },
         end: { line: 1, character: 28 },
         newText: '      alias Foo.Bar.{Baz, Qrs, X}',
+      },
+    },
+    {
+      input: [
+        'Foo.Bar.Baz',
+        dedent`
+					defmodule DrewScratch do
+
+						def foo do
+							<.live_component module={Baz}>
+							</.live_component>
+						end
+					end			
+        `,
+      ],
+      expectedOutput: {
+        start: { line: 1, character: 0 },
+        newText: '  alias Foo.Bar.Baz\n',
       },
     },
   ]);
