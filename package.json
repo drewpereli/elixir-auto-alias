@@ -12,7 +12,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onLanguage:elixir"
+    "onLanguage:elixir",
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "scripts": {
