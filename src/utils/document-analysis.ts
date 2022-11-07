@@ -193,7 +193,8 @@ export function lineStartOffset(line: string): number {
 
 export function textEditForForModule(
   moduleName: string,
-  document: string
+  document: string,
+  useMultiAlias: boolean
 ): SimpleTextEdit {
   //	Get module prefix
   //	If the module has a prefix and it's already aliased
@@ -204,7 +205,7 @@ export function textEditForForModule(
 
   const lineToUpdate = lineOfUpdatableAlias(moduleName, document);
 
-  if (lineToUpdate !== undefined) {
+  if (useMultiAlias && lineToUpdate !== undefined) {
     const lineText = document.split('\n')[lineToUpdate];
 
     const newLineText = addAliasNameToLine(parts.name, lineText);
