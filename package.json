@@ -11,6 +11,20 @@
   "categories": [
     "Other"
   ],
+  "contributes": {
+    "configuration": [
+      {
+        "title": "Elixir Auto-Alias",
+        "properties": {
+          "elixirAutoAlias.useMultiAlias": {
+            "type": "boolean",
+            "default": true,
+            "description": "Use the multi-alias syntax rather than a unique alias for each module within a parent"
+          }
+        }
+      }
+    ]
+  },
   "activationEvents": [
     "onLanguage:elixir"
   ],
