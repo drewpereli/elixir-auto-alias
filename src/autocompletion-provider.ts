@@ -35,7 +35,11 @@ export default class AutocompletionProvider
       return;
     }
 
-    const edit = textEditForForModule(moduleName, text);
+    const edit = textEditForForModule(
+      moduleName,
+      text,
+      this.getUseMultiAlias()
+    );
 
     const parts = moduleParts(moduleName);
 
@@ -54,5 +58,11 @@ export default class AutocompletionProvider
       additionalTextEdits: [vsCodeEdit],
       insertText: parts.name,
     };
+  }
+
+  private getUseMultiAlias(): boolean {
+    return !!vscode.workspace
+      .getConfiguration('elixirAutoAlias')
+      .get('useMultiAlias');
   }
 }

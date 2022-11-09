@@ -331,6 +331,7 @@ describe('textEditForForModule', function () {
 					defmodule Abc do
 					end	
 				`,
+        true,
       ],
       expectedOutput: {
         start: { line: 1, character: 0 },
@@ -346,6 +347,7 @@ describe('textEditForForModule', function () {
 					  alias Xyx
 					end
 				`,
+        true,
       ],
       expectedOutput: {
         start: { line: 2, character: 0 },
@@ -360,11 +362,27 @@ describe('textEditForForModule', function () {
 					  alias Foo.Bar.{Abc, Xyz}
 					end
 				`,
+        true,
       ],
       expectedOutput: {
         start: { line: 1, character: 0 },
         end: { line: 1, character: 26 },
         newText: '  alias Foo.Bar.{Abc, Baz, Xyz}',
+      },
+    },
+    {
+      input: [
+        'Foo.Bar.Baz',
+        dedent`
+					defmodule Abc do
+					  alias Foo.Bar.{Abc, Xyz}
+					end
+				`,
+        false,
+      ],
+      expectedOutput: {
+        start: { line: 1, character: 0 },
+        newText: '  alias Foo.Bar.Baz\n',
       },
     },
     {
@@ -375,6 +393,7 @@ describe('textEditForForModule', function () {
             alias Foo.Bar.{Aaa, Bbb}
           end
         `,
+        true,
       ],
       expectedOutput: {
         start: { line: 1, character: 0 },
@@ -390,6 +409,7 @@ describe('textEditForForModule', function () {
             alias Foo.Bar.{Qrs, X}
           end
         `,
+        true,
       ],
       expectedOutput: {
         start: { line: 1, character: 0 },
@@ -405,6 +425,7 @@ describe('textEditForForModule', function () {
                 alias Foo.Bar.{Qrs, X}
           end
         `,
+        true,
       ],
       expectedOutput: {
         start: { line: 1, character: 0 },
@@ -424,6 +445,7 @@ describe('textEditForForModule', function () {
 						end
 					end			
         `,
+        true,
       ],
       expectedOutput: {
         start: { line: 1, character: 0 },
